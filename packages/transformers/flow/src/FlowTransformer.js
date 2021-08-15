@@ -5,8 +5,7 @@ import {Transformer} from '@parcel/plugin';
 export default (new Transformer({
   async loadConfig({config, options}) {
     if (!config.isSource) {
-      config.setResult(false);
-      return;
+      return false;
     }
 
     // Only run flow if `flow-bin` is listed as a dependency in the root package.json
@@ -20,13 +19,13 @@ export default (new Transformer({
       pkg?.dependencies?.['flow-bin'] != null ||
       pkg?.devDependencies?.['flow-bin'] != null;
 
-    config.setResult(shouldStripFlow);
     if (shouldStripFlow) {
       config.addDevDependency({
-        moduleSpecifier: 'flow-remove-types',
+        specifier: 'flow-remove-types',
         resolveFrom: options.projectRoot + '/index',
       });
     }
+    return shouldStripFlow;
   },
 
   async transform({asset, config, options}) {
