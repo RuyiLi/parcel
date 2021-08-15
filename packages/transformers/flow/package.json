@@ -20,7 +20,7 @@
     "parcel": "^2.0.0-beta.1"
   },
   "dependencies": {
-    "@parcel/plugin": "2.0.0-beta.2"
+    "@parcel/plugin": "2.0.0-rc.0"
   },
   "devDependencies": {
     "flow-remove-types": "2.148.0"
