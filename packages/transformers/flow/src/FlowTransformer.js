@@ -4,20 +4,20 @@ import {Transformer} from '@parcel/plugin';
 
 export default (new Transformer({
   async loadConfig({config, options}) {
-    if (!config.isSource) {
-      return false;
-    }
+    // if (!config.isSource) {
+    //   return false;
+    // }
+    //
+    // // Only run flow if `flow-bin` is listed as a dependency in the root package.json
+    // let pkg: ?PackageJSON = (
+    //   await config.getConfigFrom(options.projectRoot + '/index', [
+    //     'package.json',
+    //   ])
+    // )?.contents;
 
-    // Only run flow if `flow-bin` is listed as a dependency in the root package.json
-    let pkg: ?PackageJSON = (
-      await config.getConfigFrom(options.projectRoot + '/index', [
-        'package.json',
-      ])
-    )?.contents;
-
-    let shouldStripFlow =
-      pkg?.dependencies?.['flow-bin'] != null ||
-      pkg?.devDependencies?.['flow-bin'] != null;
+    let shouldStripFlow = true;
+    // pkg?.dependencies?.['flow-bin'] != null ||
+    // pkg?.devDependencies?.['flow-bin'] != null;
 
     if (shouldStripFlow) {
       config.addDevDependency({
@@ -47,7 +47,18 @@ export default (new Transformer({
 
     // This replaces removed code sections with spaces, so all source positions
     // remain valid and no sourcemap is needed.
-    asset.setCode(flowRemoveTypes(code).toString());
+    let result = flowRemoveTypes(code, {
+      // node_modules/react-native/Libraries/Utilities/DevSettings.js doesn't contain a @flow comment
+      all: asset.filePath.includes('node_modules/react-native/'),
+    }).toString();
+
+    // https://github.com/facebook/flow/issues/8725
+    // in node_modules/react-native/Libraries/Components/DatePickerAndroid/DatePickerAndroid.android.js
+    if (result.includes('static +')) {
+      result = result.replace(/static \+/g, 'static ');
+    }
+
+    asset.setCode(result);
 
     return [asset];
   },
